@@ -1,18 +1,37 @@
 package main
 
 import (
+	// "encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-type SublBuildTemplate struct {
+type BuildTemplate struct {
+	Cmd      [2]string `json:"cmd"`
+	Path     string    `json:"path"`
+	filename string
 }
 
-// func (s *SublBuildTemplate) MarshallJSON() ([]byte, error) {
+func NewBuildTemplate(path, fork, version string) BuildTemplate {
+	return BuildTemplate{
+		Cmd:      [2]string{"cmd", "$file"},
+		Path:     path,
+		filename: makeFileName(fork, version),
+	}
+}
 
-// }
+func capitalize(s string) string {
+	slice := strings.Split(s, "")
+	slice[0] = strings.ToUpper(slice[0])
+	return strings.Join(slice, "")
+}
+
+func makeFileName(forkName, version string) string {
+	return fmt.Sprint(capitalize(forkName), " ", version, ".sublime-build")
+}
 
 func main() {
 
@@ -35,7 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var verPaths []string
+	var builds []BuildTemplate
 	for _, fork := range forkNames {
 
 		forkDir, err := os.Open(filepath.Join(versionsDir, fork))
@@ -50,9 +69,11 @@ func main() {
 		}
 
 		for _, version := range forkVersionNames {
-			verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
+			path := filepath.Join(forkDir.Name(), version, "bin")
+			builds = append(builds, NewBuildTemplate(path, fork, version))
+			// verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
 		}
 	}
-	fmt.Print(verPaths)
+	fmt.Print(builds)
 
 }
