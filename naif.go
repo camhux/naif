@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"ioutil"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
@@ -19,7 +19,7 @@ type BuildTemplate struct {
 
 func NewBuildTemplate(path, fork, version string) BuildTemplate {
 	return BuildTemplate{
-		Cmd:      [2]string{"cmd", "$file"},
+		Cmd:      [2]string{fork, "$file"},
 		Path:     path,
 		filename: makeFileName(fork, version),
 	}
@@ -36,6 +36,13 @@ func makeFileName(forkName, version string) string {
 }
 
 func main() {
+	user, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	homeDir := user.HomeDir
+	STDir := filepath.Join(homeDir, "Library/Application Support/Sublime Text 3/Packages/User")
 
 	nvmDir, ok := os.LookupEnv("NVM_DIR")
 	if !ok {
@@ -76,8 +83,14 @@ func main() {
 			// verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
 		}
 	}
-	json1, _ := json.Marshal(builds[0])
-	fmt.Print(string(json1))
-	// fmt.Print(json.Marshal(builds[1]))
 
+	for _, build := range builds {
+		writePath := filepath.Join(STDir, build.filename)
+		json, err := json.Marshal(build)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Print(writePath, string(json))
+		ioutil.WriteFile(writePath, json, 0644)
+	}
 }
