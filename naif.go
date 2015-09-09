@@ -22,12 +22,37 @@ func main() {
 	}
 	// aliasDir := filepath.Join(nvmDir, "alias")
 
-	versions, err := os.Open(filepath.Join(nvmDir, "versions"))
+	versionsDir := filepath.Join(nvmDir, "versions")
+
+	versions, err := os.Open(versionsDir)
 	if err != nil {
 		log.Fatalf("Unable to read versions directory: %v", err)
 	}
+	defer versions.Close()
 
-	versToBuild := versions.Readdirnames(-1)
-	verPaths := make([]string, len(versToBuild))
+	forkNames, err := versions.Readdirnames(-1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var verPaths []string
+	for _, fork := range forkNames {
+
+		forkDir, err := os.Open(filepath.Join(versionsDir, fork))
+		if err != nil {
+			log.Fatalf("Unable to open fork subdirectory: %v Err: ", fork, err)
+		}
+		defer forkDir.Close()
+
+		forkVersionNames, err := forkDir.Readdirnames(-1)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, version := range forkVersionNames {
+			verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
+		}
+	}
+	fmt.Print(verPaths)
 
 }
