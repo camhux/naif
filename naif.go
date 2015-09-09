@@ -1,10 +1,12 @@
 package main
 
 import (
-	// "encoding/json"
+	"encoding/json"
 	"fmt"
+	"ioutil"
 	"log"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 )
@@ -74,6 +76,8 @@ func main() {
 			// verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
 		}
 	}
-	fmt.Print(builds)
+	json1, _ := json.Marshal(builds[0])
+	fmt.Print(string(json1))
+	// fmt.Print(json.Marshal(builds[1]))
 
 }
