@@ -8,7 +8,12 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strings"
+)
+
+const (
+	filenamePattern = "^(Node|Io.js) v\\d+\\.\\d+\\.\\d-naif.sublime-build$"
 )
 
 type BuildTemplate struct {
@@ -32,7 +37,43 @@ func capitalize(s string) string {
 }
 
 func makeFileName(forkName, version string) string {
-	return fmt.Sprint(capitalize(forkName), " ", version, ".sublime-build")
+	return fmt.Sprint(capitalize(forkName), " ", version, "-naif", ".sublime-build")
+}
+
+func checkVerFromBuild(fileName string, builds []BuildTemplate) bool {
+	for _, build := range builds {
+		if build.filename == fileName {
+			return true
+		}
+	}
+	return false
+}
+
+func pruneSavedBuilds(sublimepath string, builds []BuildTemplate) {
+	r := regexp.MustCompile(filenamePattern)
+
+	sublimeDir, err := os.Open(sublimepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sublimeDir.Close()
+
+	filenames, err := sublimeDir.Readdirnames(-1)
+
+	var buildNamesFromFile []string
+
+	for _, filename := range filenames {
+		if r.MatchString(filename) {
+			buildNames = append(buildNamesFromFile, filename)
+		}
+	}
+
+	var buildsToRemove []string
+	for _, buildName := range buildNamesFromFile {
+		if !checkVerFromBuild(buildName) {
+			os.Remove(filepath.join(sublimepath, buildName))
+		}
+	}
 }
 
 func main() {
@@ -42,7 +83,7 @@ func main() {
 	}
 
 	homeDir := user.HomeDir
-	STDir := filepath.Join(homeDir, "Library/Application Support/Sublime Text 3/Packages/User")
+	sublimepath := filepath.Join(homeDir, "Library/Application Support/Sublime Text 3/Packages/User")
 
 	nvmDir, ok := os.LookupEnv("NVM_DIR")
 	if !ok {
@@ -80,17 +121,17 @@ func main() {
 		for _, version := range forkVersionNames {
 			path := filepath.Join(forkDir.Name(), version, "bin")
 			builds = append(builds, NewBuildTemplate(path, fork, version))
-			// verPaths = append(verPaths, filepath.Join(forkDir.Name(), version, "bin"))
 		}
 	}
 
 	for _, build := range builds {
-		writePath := filepath.Join(STDir, build.filename)
+		writePath := filepath.Join(sublimepath, build.filename)
 		json, err := json.Marshal(build)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// fmt.Print(writePath, string(json))
-		ioutil.WriteFile(writePath, json, 0644)
+		fmt.Print(writePath, string(json), "\n")
+		// ioutil.WriteFile(writePath, json, 0644)
 	}
+	pruneSavedBuilds(sublimepath, builds)
 }
