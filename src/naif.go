@@ -64,14 +64,13 @@ func pruneSavedBuilds(sublimepath string, builds []BuildTemplate) {
 
 	for _, filename := range filenames {
 		if r.MatchString(filename) {
-			buildNames = append(buildNamesFromFile, filename)
+			buildNamesFromFile = append(buildNamesFromFile, filename)
 		}
 	}
 
-	var buildsToRemove []string
 	for _, buildName := range buildNamesFromFile {
-		if !checkVerFromBuild(buildName) {
-			os.Remove(filepath.join(sublimepath, buildName))
+		if !checkVerFromBuild(buildName, builds) {
+			os.Remove(filepath.Join(sublimepath, buildName))
 		}
 	}
 }
@@ -130,8 +129,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print(writePath, string(json), "\n")
-		// ioutil.WriteFile(writePath, json, 0644)
+		ioutil.WriteFile(writePath, json, 0644)
 	}
 	pruneSavedBuilds(sublimepath, builds)
 }
