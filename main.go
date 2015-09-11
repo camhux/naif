@@ -2,78 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
-	"regexp"
-	"strings"
 )
-
-const (
-	filenamePattern = "^(Node|Io.js) v\\d+\\.\\d+\\.\\d-naif.sublime-build$"
-)
-
-type BuildTemplate struct {
-	Cmd      [2]string `json:"cmd"`
-	Path     string    `json:"path"`
-	filename string
-}
-
-func NewBuildTemplate(path, fork, version string) BuildTemplate {
-	return BuildTemplate{
-		Cmd:      [2]string{fork, "$file"},
-		Path:     path,
-		filename: makeFileName(fork, version),
-	}
-}
-
-func capitalize(s string) string {
-	slice := strings.Split(s, "")
-	slice[0] = strings.ToUpper(slice[0])
-	return strings.Join(slice, "")
-}
-
-func makeFileName(forkName, version string) string {
-	return fmt.Sprint(capitalize(forkName), " ", version, "-naif", ".sublime-build")
-}
-
-func checkVerFromBuild(fileName string, builds []BuildTemplate) bool {
-	for _, build := range builds {
-		if build.filename == fileName {
-			return true
-		}
-	}
-	return false
-}
-
-func pruneSavedBuilds(sublimepath string, builds []BuildTemplate) {
-	r := regexp.MustCompile(filenamePattern)
-
-	sublimeDir, err := os.Open(sublimepath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer sublimeDir.Close()
-
-	filenames, err := sublimeDir.Readdirnames(-1)
-
-	var buildNamesFromFile []string
-
-	for _, filename := range filenames {
-		if r.MatchString(filename) {
-			buildNamesFromFile = append(buildNamesFromFile, filename)
-		}
-	}
-
-	for _, buildName := range buildNamesFromFile {
-		if !checkVerFromBuild(buildName, builds) {
-			os.Remove(filepath.Join(sublimepath, buildName))
-		}
-	}
-}
 
 func main() {
 	user, err := user.Current()
