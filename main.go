@@ -15,24 +15,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	homeDir := user.HomeDir
-	sublimepath := filepath.Join(homeDir, "Library/Application Support/Sublime Text 3/Packages/User")
+	homepath := user.HomeDir
+	sublimepath := filepath.Join(homepath, "Library/Application Support/Sublime Text 3/Packages/User")
 
-	nvmDir, ok := os.LookupEnv("NVM_DIR")
+	nvmpath, ok := os.LookupEnv("NVM_DIR")
 	if !ok {
 		log.Fatal("Unable to locate .nvm directory!")
 	}
-	// aliasDir := filepath.Join(nvmDir, "alias")
+	// aliasDir := filepath.Join(nvmpath, "alias")
 
-	versionsDir := filepath.Join(nvmDir, "versions")
+	versionspath := filepath.Join(nvmpath, "versions")
 
-	versions, err := os.Open(versionsDir)
+	versionsDir, err := os.Open(versionspath)
 	if err != nil {
 		log.Fatalf("Unable to read versions directory: %v", err)
 	}
-	defer versions.Close()
+	defer versionsDir.Close()
 
-	forkNames, err := versions.Readdirnames(-1)
+	forkNames, err := versionsDir.Readdirnames(-1)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func main() {
 	var builds []BuildTemplate
 	for _, fork := range forkNames {
 
-		forkDir, err := os.Open(filepath.Join(versionsDir, fork))
+		forkDir, err := os.Open(filepath.Join(versionspath, fork))
 		if err != nil {
 			log.Fatalf("Unable to open fork subdirectory: %v Err: ", fork, err)
 		}
