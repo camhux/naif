@@ -38,6 +38,7 @@ func pruneSavedBuilds(sublimepath string, builds []BuildTemplate) {
 	for _, buildName := range buildNamesFromFile {
 		if !checkVerFromBuild(buildName, builds) {
 			os.Remove(filepath.Join(sublimepath, buildName))
+			log.Printf("Removed build %v", buildName)
 		}
 	}
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -47,14 +46,13 @@ func main() {
 	}
 
 	homepath = user.HomeDir
-	sublimepath = filepath.Join(homepath, "Library/Application Support/Sublime Text 3/Packages/User")
+	setSublimePath()
 
 	var ok bool // separate declaration required, since multiple short assignment shadows the global nvmpath var
 	nvmpath, ok = os.LookupEnv("NVM_DIR")
 	if !ok {
 		log.Fatal("Unable to locate .nvm directory!")
 	}
-	// aliasDir := filepath.Join(nvmpath, "alias")
 
 	var builds []BuildTemplate
 
@@ -67,27 +65,28 @@ func main() {
 	}
 
 	for _, build := range builds {
-		// checkOrWriteBuild(sublimepath, build)
-		fmt.Println(build)
+		checkOrWriteBuild(sublimepath, build)
 	}
-	// pruneSavedBuilds(sublimepath, builds)
+	pruneSavedBuilds(sublimepath, builds)
 }
 
-func checkOrWriteBuild(sublimepath string, build BuildTemplate) error {
+func checkOrWriteBuild(sublimepath string, build BuildTemplate) {
 	writepath := filepath.Join(sublimepath, build.filename)
 
 	json, err := json.Marshal(build)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if _, err := os.Stat(writepath); err != nil {
 		writeErr := ioutil.WriteFile(writepath, json, 0644)
 		if writeErr != nil {
-			return writeErr
+			log.Fatal(writeErr)
 		}
+		log.Printf("Wrote %v in %v ", build.filename, sublimepath)
+	} else {
+		log.Printf("Build system %v already exists, leaving in place", build.filename)
 	}
-	return nil
 }
 
 func getForknames() []string {
@@ -122,4 +121,19 @@ func getVersOfFork(forkname string) []string {
 	}
 
 	return forkVers
+}
+
+func setSublimePath() {
+	parent := filepath.Join(homepath, "Library", "Application Support")
+	st2 := "Sublime Text 2"
+	st3 := "Sublime Text 3"
+	end := filepath.Join("Packages", "User")
+
+	if _, err := os.Stat(filepath.Join(parent, st3)); err == nil {
+		sublimepath = filepath.Join(parent, st3, end)
+	} else if _, err := os.Stat(filepath.Join(parent, st2)); err == nil {
+		sublimepath = filepath.Join(parent, st2, end)
+	} else {
+		log.Fatal("Cannot find SublimeText directory!")
+	}
 }

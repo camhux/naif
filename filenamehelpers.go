@@ -12,5 +12,9 @@ func capitalize(s string) string {
 }
 
 func makeFileName(forkName, version string) string {
-	return fmt.Sprint(capitalize(forkName), " ", version, "-naif", ".sublime-build")
+	if forkName == "node" {
+		forkName = capitalize(forkName)
+	}
+
+	return fmt.Sprint(forkName, " ", version, "-naif", ".sublime-build")
 }
