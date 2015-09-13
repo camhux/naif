@@ -30,7 +30,7 @@ func NewBuildTemplate(fork, version string) BuildTemplate {
 		cmd = fork
 	}
 
-	path := filepath.Join(nvmpath, fork, version, "bin")
+	path := filepath.Join(nvmpath, "versions", fork, version, "bin")
 
 	return BuildTemplate{
 		Cmd:      [2]string{cmd, "$file"},
