@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -48,7 +49,8 @@ func main() {
 	homepath = user.HomeDir
 	sublimepath = filepath.Join(homepath, "Library/Application Support/Sublime Text 3/Packages/User")
 
-	nvmpath, ok := os.LookupEnv("NVM_DIR")
+	var ok bool // separate declaration required, since multiple short assignment shadows the global nvmpath var
+	nvmpath, ok = os.LookupEnv("NVM_DIR")
 	if !ok {
 		log.Fatal("Unable to locate .nvm directory!")
 	}
@@ -65,13 +67,14 @@ func main() {
 	}
 
 	for _, build := range builds {
-		checkOrWriteBuild(sublimepath, build)
+		// checkOrWriteBuild(sublimepath, build)
+		fmt.Println(build)
 	}
-	pruneSavedBuilds(sublimepath, builds)
+	// pruneSavedBuilds(sublimepath, builds)
 }
 
 func checkOrWriteBuild(sublimepath string, build BuildTemplate) error {
-	writepath := filepath.join(sublimepath, build.filename)
+	writepath := filepath.Join(sublimepath, build.filename)
 
 	json, err := json.Marshal(build)
 	if err != nil {
@@ -111,7 +114,7 @@ func getVersOfFork(forkname string) []string {
 	if err != nil {
 		log.Fatalf("Unable to read fork directory: %v", err)
 	}
-	defer forkDir.close()
+	defer forkDir.Close()
 
 	forkVers, err := forkDir.Readdirnames(-1)
 	if err != nil {
