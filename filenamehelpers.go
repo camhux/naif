@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	filenamePattern = "^(Node|Io.js) v\\d+\\.\\d+\\.\\d-naif.sublime-build$"
-)
-
 func capitalize(s string) string {
 	slice := strings.Split(s, "")
 	slice[0] = strings.ToUpper(slice[0])

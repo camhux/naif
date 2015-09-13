@@ -17,7 +17,7 @@ func checkVerFromBuild(fileName string, builds []BuildTemplate) bool {
 }
 
 func pruneSavedBuilds(sublimepath string, builds []BuildTemplate) {
-	r := regexp.MustCompile(filenamePattern)
+	r := regexp.MustCompile("^(Node|Io.js) v\\d+\\.\\d+\\.\\d-naif.sublime-build$")
 
 	sublimeDir, err := os.Open(sublimepath)
 	if err != nil {
