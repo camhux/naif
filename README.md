@@ -6,8 +6,12 @@ naif uses your `NVM_DIR` shell variable to scan and record the installed version
 
 ## How to get it:
 OSX, 64bit only.
+
 If you want to build from source using the go tool: `go get github.com/camhux/naif`
-If you don't: download the binary from the releases tab and run from wherever you like: `$ ./naif`. For convenience, you can shove it somewhere on your path and use it like a command: `$ naif`.
+
+If you don't: download the binary from the releases tab and run from wherever you like: `$ ./naif`.
+
+For convenience, you can shove it somewhere on your path and use it as a command: `$ naif`.
 
 ## How to use it:
 Right now, just run it. You have no options. All of the files it writes are suffixed with `-naif` before their extension, so you can easily see what's been done, and it writes only to your Sublime Text/Packages/User directory.
