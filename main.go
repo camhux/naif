@@ -19,7 +19,14 @@ var (
 type BuildTemplate struct {
 	Cmd      [2]string `json:"cmd"`
 	Path     string    `json:"path"`
+	Selector string    `json:"selector"`
+	Variants Variant
 	filename string
+}
+
+type Variant struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }
 
 func NewBuildTemplate(fork, version string) BuildTemplate {
