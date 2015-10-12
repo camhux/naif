@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	homepath    string
-	sublimepath string
-	nvmpath     string
+	homepath    = getHomePath()
+	sublimepath = getSublimePath()
+	nvmpath     = os.Getenv("NVM_DIR")
 )
 
 type BuildTemplate struct {
@@ -40,19 +40,6 @@ func NewBuildTemplate(fork, version string) BuildTemplate {
 }
 
 func main() {
-	user, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	homepath = user.HomeDir
-	setSublimePath()
-
-	var ok bool // separate declaration required, since multiple short assignment shadows the global nvmpath var
-	nvmpath, ok = os.LookupEnv("NVM_DIR")
-	if !ok {
-		log.Fatal("Unable to locate .nvm directory!")
-	}
 
 	var builds []BuildTemplate
 
@@ -123,17 +110,28 @@ func getVersOfFork(forkname string) []string {
 	return forkVers
 }
 
-func setSublimePath() {
+func getSublimePath() string {
+	var s string
 	parent := filepath.Join(homepath, "Library", "Application Support")
 	st2 := "Sublime Text 2"
 	st3 := "Sublime Text 3"
 	end := filepath.Join("Packages", "User")
 
 	if _, err := os.Stat(filepath.Join(parent, st3)); err == nil {
-		sublimepath = filepath.Join(parent, st3, end)
+		s = filepath.Join(parent, st3, end)
 	} else if _, err := os.Stat(filepath.Join(parent, st2)); err == nil {
-		sublimepath = filepath.Join(parent, st2, end)
+		s = filepath.Join(parent, st2, end)
 	} else {
 		log.Fatal("Cannot find SublimeText directory!")
 	}
+
+	return s
+}
+
+func getHomePath() string {
+	currUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return currUser.HomeDir
 }
