@@ -20,35 +20,45 @@ type BuildTemplate struct {
 	Cmd      [2]string `json:"cmd"`
 	Path     string    `json:"path"`
 	Selector string    `json:"selector"`
-	Variants Variant
+	Variants []Variant `json:"variants,omitempty"`
 	filename string
 }
 
-type Variant struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
-}
-
-func NewBuildTemplate(fork, version string) BuildTemplate {
-	var cmd string
-	if strings.Contains(fork, ".") {
-		cmd = strings.Replace(fork, ".", "", 1)
-	} else {
-		cmd = fork
+func NewBuildTemplate(variants []Variant) BuildTemplate {
+	if len(variants) == 0 {
+		log.Fatal("No build systems to write. Exiting...")
 	}
-
-	path := filepath.Join(nvmpath, "versions", fork, version, "bin")
+	defaultVar := variants[0]
+	restVariants := variants[1:]
 
 	return BuildTemplate{
 		Cmd:      [2]string{cmd, "$file"},
 		Path:     path,
-		filename: makeFileName(fork, version),
+		Selector: "source.js",
+		Variants: restVariants,
+		filename: "Node (naif)",
+	}
+}
+
+type Variant struct {
+	Name string    `json:"name"`
+	Path string    `json:"path"`
+	Cmd  [2]string `json:"cmd,omitempty"`
+}
+
+func newVariant(fork, version string) Variant {
+	name := makeVariantName(fork, version)
+	path := filepath.Join(nvmpath, "versions", fork, version, "bin")
+	cmd := strings.Replace(fork, ".", "", 1)
+
+	return Variant{
+		name,
+		path,
+		[2]string{cmd, "$file"},
 	}
 }
 
 func main() {
-
-	var builds []BuildTemplate
 
 	forks := getForknames()
 	for _, fork := range forks {
@@ -60,26 +70,6 @@ func main() {
 
 	for _, build := range builds {
 		checkOrWriteBuild(sublimepath, build)
-	}
-	pruneSavedBuilds(sublimepath, builds)
-}
-
-func checkOrWriteBuild(sublimepath string, build BuildTemplate) {
-	writepath := filepath.Join(sublimepath, build.filename)
-
-	json, err := json.Marshal(build)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err := os.Stat(writepath); err != nil {
-		writeErr := ioutil.WriteFile(writepath, json, 0644)
-		if writeErr != nil {
-			log.Fatal(writeErr)
-		}
-		log.Printf("Wrote %v in %v ", build.filename, sublimepath)
-	} else {
-		log.Printf("Build system %v already exists, leaving in place", build.filename)
 	}
 }
 
