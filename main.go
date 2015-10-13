@@ -1,14 +1,15 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	//"encoding/json"
+	//"io/ioutil"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
-	"sort"
+	//"sort"
+	"strconv"
 	"strings"
 )
 
@@ -30,7 +31,7 @@ func main() {
 		}
 	}
 
-	buildTemplate := NewBuildTemplate(variants)
+	//buildTemplate := NewBuildTemplate(variants)
 }
 
 type BuildTemplate struct {
@@ -49,14 +50,14 @@ func NewBuildTemplate(variants []Variant) BuildTemplate {
 	restVariants := variants[1:]
 
 	for _, variant := range variants {
-		if variant.Cmd[0] == defaultVar.cmd[0] {
+		if variant.Cmd[0] == defaultVar.Cmd[0] {
 			variant.Cmd = nil
 		}
 	}
 
 	return BuildTemplate{
-		Cmd:      []string{cmd, "$file"},
-		Path:     path,
+		Cmd:      defaultVar.Cmd,
+		Path:     defaultVar.Path,
 		Selector: "source.js",
 		Variants: restVariants,
 		filename: "Node (naif)",
@@ -86,13 +87,16 @@ type Variants []Variant
 var verPattern *regexp.Regexp = regexp.MustCompile("\\d{1,2}")
 
 func (vars *Variants) Len() int {
-	return len(vars)
+	return len(*vars)
 }
 
 func (vars *Variants) Less(i, j int) bool {
+	s := *vars
+	verA := verPattern.FindAllString(s[i].Name, 3)
+	verB := verPattern.FindAllString(s[j].Name, 3)
 
-	verA := verPattern.FindAllString(vars[i].Name)
-	verB := verPattern.FindAllString(vars[j].Name)
+	log.Print(verA)
+	log.Print(verB)
 
 	for i := range verA {
 		segA, errA := strconv.Atoi(verA[i])
@@ -104,6 +108,8 @@ func (vars *Variants) Less(i, j int) bool {
 
 		if segA < segB {
 			return true
+		} else {
+			break
 		}
 	}
 
@@ -111,9 +117,10 @@ func (vars *Variants) Less(i, j int) bool {
 }
 
 func (vars *Variants) Swap(i, j int) {
-	temp := vars[i]
-	vars[i] = vars[j]
-	vars[j] = temp
+	s := *vars
+	temp := s[i]
+	s[i] = s[j]
+	s[j] = temp
 }
 
 func getForknames() []string {
