@@ -34,7 +34,7 @@ func main() {
 }
 
 type BuildTemplate struct {
-	Cmd      [2]string `json:"cmd"`
+	Cmd      []string  `json:"cmd"`
 	Path     string    `json:"path"`
 	Selector string    `json:"selector"`
 	Variants []Variant `json:"variants,omitempty"`
@@ -50,12 +50,12 @@ func NewBuildTemplate(variants []Variant) BuildTemplate {
 
 	for _, variant := range variants {
 		if variant.Cmd[0] == defaultVar.cmd[0] {
-			variant.Cmd = [2]string{}
+			variant.Cmd = nil
 		}
 	}
 
 	return BuildTemplate{
-		Cmd:      [2]string{cmd, "$file"},
+		Cmd:      []string{cmd, "$file"},
 		Path:     path,
 		Selector: "source.js",
 		Variants: restVariants,
@@ -64,9 +64,9 @@ func NewBuildTemplate(variants []Variant) BuildTemplate {
 }
 
 type Variant struct {
-	Name string    `json:"name"`
-	Path string    `json:"path"`
-	Cmd  [2]string `json:"cmd,omitempty"`
+	Name string   `json:"name"`
+	Path string   `json:"path"`
+	Cmd  []string `json:"cmd,omitempty"`
 }
 
 func NewVariant(fork, version string) Variant {
@@ -77,7 +77,7 @@ func NewVariant(fork, version string) Variant {
 	return Variant{
 		name,
 		path,
-		[2]string{cmd, "$file"},
+		[]string{cmd, "$file"},
 	}
 }
 
@@ -90,8 +90,9 @@ func (vars *Variants) Len() int {
 }
 
 func (vars *Variants) Less(i, j int) bool {
-	verA := verPattern.FindAllString(vars[i])
-	verB := verPattern.FindAllString(vars[j])
+
+	verA := verPattern.FindAllString(vars[i].Name)
+	verB := verPattern.FindAllString(vars[j].Name)
 
 	for i := range verA {
 		segA, errA := strconv.Atoi(verA[i])
