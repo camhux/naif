@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -15,6 +17,21 @@ var (
 	sublimepath = getSublimePath()
 	nvmpath     = os.Getenv("NVM_DIR")
 )
+
+func main() {
+
+	var variants []Variant
+
+	forks := getForknames()
+	for _, fork := range forks {
+		versions := getVersOfFork(fork)
+		for _, version := range versions {
+			variants = append(variants, NewVariant(fork, version))
+		}
+	}
+
+	buildTemplate := NewBuildTemplate(variants)
+}
 
 type BuildTemplate struct {
 	Cmd      [2]string `json:"cmd"`
@@ -31,6 +48,12 @@ func NewBuildTemplate(variants []Variant) BuildTemplate {
 	defaultVar := variants[0]
 	restVariants := variants[1:]
 
+	for _, variant := range variants {
+		if variant.Cmd[0] == defaultVar.cmd[0] {
+			variant.Cmd = [2]string{}
+		}
+	}
+
 	return BuildTemplate{
 		Cmd:      [2]string{cmd, "$file"},
 		Path:     path,
@@ -46,7 +69,7 @@ type Variant struct {
 	Cmd  [2]string `json:"cmd,omitempty"`
 }
 
-func newVariant(fork, version string) Variant {
+func NewVariant(fork, version string) Variant {
 	name := makeVariantName(fork, version)
 	path := filepath.Join(nvmpath, "versions", fork, version, "bin")
 	cmd := strings.Replace(fork, ".", "", 1)
@@ -58,19 +81,38 @@ func newVariant(fork, version string) Variant {
 	}
 }
 
-func main() {
+type Variants []Variant
 
-	forks := getForknames()
-	for _, fork := range forks {
-		versions := getVersOfFork(fork)
-		for _, version := range versions {
-			builds = append(builds, NewBuildTemplate(fork, version))
+var verPattern *regexp.Regexp = regexp.MustCompile("\\d{1,2}")
+
+func (vars *Variants) Len() int {
+	return len(vars)
+}
+
+func (vars *Variants) Less(i, j int) bool {
+	verA := verPattern.FindAllString(vars[i])
+	verB := verPattern.FindAllString(vars[j])
+
+	for i := range verA {
+		segA, errA := strconv.Atoi(verA[i])
+		segB, errB := strconv.Atoi(verB[i])
+
+		if errA != nil || errB != nil {
+			log.Fatal("Error sorting variants: ", errA, errB)
+		}
+
+		if segA < segB {
+			return true
 		}
 	}
 
-	for _, build := range builds {
-		checkOrWriteBuild(sublimepath, build)
-	}
+	return false
+}
+
+func (vars *Variants) Swap(i, j int) {
+	temp := vars[i]
+	vars[i] = vars[j]
+	vars[j] = temp
 }
 
 func getForknames() []string {
