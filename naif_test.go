@@ -71,8 +71,6 @@ func TestBuildTemplate(t *testing.T) {
 	tvs := make(Variants, len(vs))
 	copy(tvs, vs)
 
-	sort.Sort(tvs)
-
 	b, err := NewBuildTemplate(tvs)
 	if err != nil {
 		t.Error(err)

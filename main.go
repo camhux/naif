@@ -32,8 +32,6 @@ func main() {
 		}
 	}
 
-	sort.Sort(variants)
-
 	// buildTemplate := NewBuildTemplate(variants)
 }
 
@@ -49,6 +47,8 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 	if len(variants) == 0 {
 		return BuildTemplate{}, errors.New("No build to write")
 	}
+
+	sort.Sort(variants)
 
 	defaultVar := variants[len(variants)-1]
 	restVariants := variants[:len(variants)-1]
