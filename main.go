@@ -86,17 +86,14 @@ type Variants []Variant
 
 var verPattern *regexp.Regexp = regexp.MustCompile("\\d{1,2}")
 
-func (vars *Variants) Len() int {
-	return len(*vars)
+func (vars Variants) Len() int {
+	return len(vars)
 }
 
-func (vars *Variants) Less(i, j int) bool {
-	s := *vars
+func (vars Variants) Less(i, j int) bool {
+	s := vars
 	verA := verPattern.FindAllString(s[i].Name, 3)
 	verB := verPattern.FindAllString(s[j].Name, 3)
-
-	log.Print(verA)
-	log.Print(verB)
 
 	for i := range verA {
 		segA, errA := strconv.Atoi(verA[i])
@@ -116,8 +113,8 @@ func (vars *Variants) Less(i, j int) bool {
 	return false
 }
 
-func (vars *Variants) Swap(i, j int) {
-	s := *vars
+func (vars Variants) Swap(i, j int) {
+	s := vars
 	temp := s[i]
 	s[i] = s[j]
 	s[j] = temp
