@@ -3,12 +3,13 @@ package main
 import (
 	//"encoding/json"
 	//"io/ioutil"
+	"errors"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
-	//"sort"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -21,7 +22,7 @@ var (
 
 func main() {
 
-	var variants []Variant
+	var variants Variants
 
 	forks := getForknames()
 	for _, fork := range forks {
@@ -31,7 +32,9 @@ func main() {
 		}
 	}
 
-	//buildTemplate := NewBuildTemplate(variants)
+	sort.Sort(variants)
+
+	// buildTemplate := NewBuildTemplate(variants)
 }
 
 type BuildTemplate struct {
@@ -42,12 +45,13 @@ type BuildTemplate struct {
 	filename string
 }
 
-func NewBuildTemplate(variants []Variant) BuildTemplate {
+func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 	if len(variants) == 0 {
-		log.Fatal("No build systems to write. Exiting...")
+		return BuildTemplate{}, errors.New("No build to write")
 	}
-	defaultVar := variants[0]
-	restVariants := variants[1:]
+
+	defaultVar := variants[len(variants)-1]
+	restVariants := variants[:len(variants)-1]
 
 	for _, variant := range variants {
 		if variant.Cmd[0] == defaultVar.Cmd[0] {
@@ -61,7 +65,7 @@ func NewBuildTemplate(variants []Variant) BuildTemplate {
 		Selector: "source.js",
 		Variants: restVariants,
 		filename: "Node (naif)",
-	}
+	}, nil
 }
 
 type Variant struct {
