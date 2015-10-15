@@ -48,10 +48,12 @@ func main() {
 
 	defer dest.Close()
 
+	log.Println("naif is writing to: ", destpath)
 	_, err = dest.Write(buildJson)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Print("Done!")
 }
 
 type BuildTemplate struct {
