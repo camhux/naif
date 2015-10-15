@@ -154,6 +154,7 @@ func getForknames() []string {
 	if err != nil {
 		log.Fatalf("Unable to read versions directory: %v", err)
 	}
+
 	defer versionsDir.Close()
 
 	forknames, err := versionsDir.Readdirnames(-1)
@@ -171,6 +172,7 @@ func getVersOfFork(forkname string) []string {
 	if err != nil {
 		log.Fatalf("Unable to read fork directory: %v", err)
 	}
+
 	defer forkDir.Close()
 
 	forkVers, err := forkDir.Readdirnames(-1)
@@ -186,6 +188,7 @@ func getHomePath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return currUser.HomeDir
 }
 
