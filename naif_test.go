@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
@@ -89,8 +90,8 @@ func TestBuildTemplate(t *testing.T) {
 		t.Errorf("Expected %v to be %v", actual, expected)
 	}
 
-	if actual, expected := b.Variants, tvs[:len(tvs)-1]; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("Expected \n%v to be \n%v", actual, expected)
-	}
+	bytes, err := json.Marshal(b)
+
+	fmt.Println(string(bytes))
 
 }
