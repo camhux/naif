@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -75,5 +76,21 @@ func TestBuildTemplate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	fmt.Print(b)
+
+	sort.Sort(tvs)
+
+	if actual, expected := b.Cmd, tvs[len(tvs)-1].Cmd; !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Expected %v to be %v", actual, expected)
+	}
+
+	if actual, expected := b.Path, tvs[len(tvs)-1].Path; actual != expected {
+		t.Errorf("Expected %v to be %v", actual, expected)
+	}
+
+	if actual, expected := b.Variants, tvs[:len(tvs)-1]; !reflect.DeepEqual(actual, expected) {
+		t.Errorf("Expected \n%v to be \n%v", actual, expected)
+	}
+
 }
