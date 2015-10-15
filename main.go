@@ -1,8 +1,7 @@
 package main
 
 import (
-	//"encoding/json"
-	//"io/ioutil"
+	"encoding/json"
 	"errors"
 	"log"
 	"os"
@@ -15,9 +14,9 @@ import (
 )
 
 var (
-	homepath    = getHomePath()
-	sublimepath = getSublimePath()
-	nvmpath     = os.Getenv("NVM_DIR")
+	homepath = getHomePath()
+	destpath = getDestPath()
+	nvmpath  = getNvmPath()
 )
 
 func main() {
@@ -32,7 +31,27 @@ func main() {
 		}
 	}
 
-	// buildTemplate := NewBuildTemplate(variants)
+	buildTemplate, err := NewBuildTemplate(variants)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	buildJson, err := json.Marshal(buildTemplate)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dest, err := os.Create(filepath.Join(destpath, buildTemplate.filename))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer dest.Close()
+
+	_, err = dest.Write(buildJson)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 type BuildTemplate struct {
@@ -45,7 +64,7 @@ type BuildTemplate struct {
 
 func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 	if len(variants) == 0 {
-		return BuildTemplate{}, errors.New("No build to write")
+		return BuildTemplate{}, errors.New("No builds to write")
 	}
 
 	vs := make(Variants, len(variants))
@@ -59,7 +78,7 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 	for i := range vs {
 		if vs[i].Cmd[0] == defaultVar.Cmd[0] {
 			log.Print("Removing redundant cmd...", vs[i].Cmd[0])
-			vs[i].Cmd = nil
+			vs[i].Cmd = make([]string, 0)
 		}
 	}
 
@@ -162,7 +181,15 @@ func getVersOfFork(forkname string) []string {
 	return forkVers
 }
 
-func getSublimePath() string {
+func getHomePath() string {
+	currUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return currUser.HomeDir
+}
+
+func getDestPath() string {
 	var s string
 	parent := filepath.Join(homepath, "Library", "Application Support")
 	st2 := "Sublime Text 2"
@@ -180,10 +207,11 @@ func getSublimePath() string {
 	return s
 }
 
-func getHomePath() string {
-	currUser, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+func getNvmPath() string {
+	p, ok := os.LookupEnv("NVM_DIR")
+	if !ok {
+		log.Fatal("$NVM_DIR isn't set. Ensure that nvm is installed and sourced in your shell.")
 	}
-	return currUser.HomeDir
+
+	return p
 }
