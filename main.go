@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	buildJson, err := json.Marshal(buildTemplate)
+	buildJson, err := json.MarshalIndent(buildTemplate, "", "    ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,7 +75,6 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 	sort.Sort(vs)
 
 	defaultVar := vs[len(vs)-1]
-	restVariants := vs[:len(vs)-1]
 
 	for i := range vs {
 		if vs[i].Cmd[0] == defaultVar.Cmd[0] {
@@ -87,7 +86,7 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 		Cmd:      defaultVar.Cmd,
 		Path:     defaultVar.Path,
 		Selector: "source.js",
-		Variants: restVariants,
+		Variants: vs,
 		filename: "Node (naif).sublime-build",
 	}, nil
 }
