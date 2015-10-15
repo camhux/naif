@@ -15,8 +15,8 @@ import (
 
 var (
 	homepath = getHomePath()
-	destpath = getDestPath()
 	nvmpath  = getNvmPath()
+	destpath = getDestPath()
 )
 
 func main() {
@@ -48,7 +48,7 @@ func main() {
 
 	defer dest.Close()
 
-	log.Println("naif is writing to: ", destpath)
+	log.Println("naif is writing to:", destpath)
 	_, err = dest.Write(buildJson)
 	if err != nil {
 		log.Fatal(err)
@@ -79,7 +79,6 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 
 	for i := range vs {
 		if vs[i].Cmd[0] == defaultVar.Cmd[0] {
-			log.Print("Removing redundant cmd...", vs[i].Cmd[0])
 			vs[i].Cmd = make([]string, 0)
 		}
 	}
@@ -89,7 +88,7 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 		Path:     defaultVar.Path,
 		Selector: "source.js",
 		Variants: restVariants,
-		filename: "Node (naif)",
+		filename: "Node (naif).sublime-build",
 	}, nil
 }
 
@@ -191,6 +190,15 @@ func getHomePath() string {
 	return currUser.HomeDir
 }
 
+func getNvmPath() string {
+	p, ok := os.LookupEnv("NVM_DIR")
+	if !ok {
+		log.Fatal("$NVM_DIR isn't set. Ensure that nvm is installed and sourced in your shell.")
+	}
+
+	return p
+}
+
 func getDestPath() string {
 	var s string
 	parent := filepath.Join(homepath, "Library", "Application Support")
@@ -207,13 +215,4 @@ func getDestPath() string {
 	}
 
 	return s
-}
-
-func getNvmPath() string {
-	p, ok := os.LookupEnv("NVM_DIR")
-	if !ok {
-		log.Fatal("$NVM_DIR isn't set. Ensure that nvm is installed and sourced in your shell.")
-	}
-
-	return p
 }
