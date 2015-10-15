@@ -48,14 +48,18 @@ func NewBuildTemplate(variants Variants) (BuildTemplate, error) {
 		return BuildTemplate{}, errors.New("No build to write")
 	}
 
-	sort.Sort(variants)
+	vs := make(Variants, len(variants))
+	copy(vs, variants)
 
-	defaultVar := variants[len(variants)-1]
-	restVariants := variants[:len(variants)-1]
+	sort.Sort(vs)
 
-	for _, variant := range variants {
-		if variant.Cmd[0] == defaultVar.Cmd[0] {
-			variant.Cmd = nil
+	defaultVar := vs[len(vs)-1]
+	restVariants := vs[:len(vs)-1]
+
+	for i := range vs {
+		if vs[i].Cmd[0] == defaultVar.Cmd[0] {
+			log.Print("Removing redundant cmd...", vs[i].Cmd[0])
+			vs[i].Cmd = nil
 		}
 	}
 
