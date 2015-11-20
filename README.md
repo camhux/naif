@@ -17,7 +17,4 @@ For convenience, you can shove it somewhere on your path and use it as a command
 Right now, just run it. You have no options. The output path is logged to console and the output file is marked with `(naif)`, so all effects of the program should be transparent.
 
 ## Why it's in Go, and not just a shell script:
-For fun, and for practice in a language I want to know better.
-
-## If it wrecks your computer or doesn't work:
-I'm sorry. This was written partially as a learning exercise and, while very simple, is not extensively tested. Open an issue and hear my pleas for forgiveness.
+For fun, portability, practice, and (maybe if you've installed every version of Node possible) speed.
