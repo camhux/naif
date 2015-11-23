@@ -132,11 +132,10 @@ func (vars Variants) Less(i, j int) bool {
 
 		if segA < segB {
 			return true
-		} else {
-			break
+		} else if segA > segB {
+			return false
 		}
 	}
-
 	return false
 }
 
